@@ -3,7 +3,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from datetime import datetime as dt
 
 import pandas as pd
@@ -25,6 +25,7 @@ app.layout = html.Div(children=[
         initial_visible_month=dt.today(),
         date=str(dt.today())
         ),
+    html.Button('Submit', id='get_data'),
 
     dcc.Graph(
         id='plot',
@@ -44,10 +45,11 @@ app.layout = html.Div(children=[
 
 @app.callback(
     Output('typed_text', 'children'),
-    [Input('location', 'value')]
-    )
-def text_output(t):
-    return t
+    [Input('location', 'value'), Input('get_data', 'n_clicks')])
+def text_output(value, n_clicks):
+    value = '' if value is None else value
+    n_clicks = '' if n_clicks is None else str(n_clicks)
+    return value + n_clicks
 
 if __name__ == '__main__':
     app.run_server(debug=True)
