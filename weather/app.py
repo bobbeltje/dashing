@@ -9,6 +9,10 @@ from datetime import datetime as dt
 import pandas as pd
 import random
 
+from geopy.geocoders import Nominatim
+
+geolocator = Nominatim(user_agent='bobbeltje')
+
 class Weather():
     def __init__(self):
         self.d = pd.DataFrame({
@@ -68,8 +72,15 @@ def plot_weather(n_clicks):
 
 @app.callback(
     Output('typed_text', 'children'),
-    [Input('location', 'value'), Input('get_data', 'n_clicks')])
-def text_output(value, n_clicks):
+    [Input('get_data', 'n_clicks')],
+    [State('location', 'value')]
+)
+def text_output(n_clicks, value):
+    global geolocator
+    print(value)
+    l = geolocator.geocode(value)
+    if 'raw' in dir(l):
+        print(l.raw)
     value = '' if value is None else value
     n_clicks = '' if n_clicks is None else str(n_clicks)
     return value + n_clicks
