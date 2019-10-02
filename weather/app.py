@@ -6,10 +6,12 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from datetime import datetime as dt
 
+import json
 import pandas as pd
 import random
 
 from geopy.geocoders import Nominatim
+import requests
 
 geolocator = Nominatim(user_agent='bobbeltje')
 
@@ -26,6 +28,21 @@ class Weather():
         
     def get_data(self):
         return self.d
+
+def get_weather_data(l, date):
+    year = int(date[:4])
+    month = int(date[5:7])
+    day = int(date[8:10])
+    print(f'{year}-{month}-{day}')
+    
+    epoch = dt(year, month, day).timestamp()
+    base = "https://api.darksky.net/forecast/"
+    key = "68c2f89966bbe863f2fd12d98370da08"
+    lat = l.latitude                                                         
+    lon = l.longitude
+    reques = f'{base}{key}/{lat},{lon},{int(epoch)}?units=si'
+    r = requests.get(reques)
+    return r
         
 w = Weather()
 
@@ -73,14 +90,21 @@ def plot_weather(n_clicks):
 @app.callback(
     Output('typed_text', 'children'),
     [Input('get_data', 'n_clicks')],
-    [State('location', 'value')]
+    [State('location', 'value'), State('date_input', 'date')]
 )
-def text_output(n_clicks, value):
+def text_output(n_clicks, value, dat):
+    if n_clicks is None :
+        return 'nothing'
+    print('\n\n\n\n\n\n\n\n\n\n')
     global geolocator
-    print(value)
     l = geolocator.geocode(value)
     if 'raw' in dir(l):
         print(l.raw)
+        print('\n\n\n')
+        r = get_weather_data(l, dat)
+        weather = json.loads(r.text)
+        print(weather)
+        
     value = '' if value is None else value
     n_clicks = '' if n_clicks is None else str(n_clicks)
     return value + n_clicks
