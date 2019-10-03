@@ -7,6 +7,7 @@ from dash.dependencies import Input, Output, State
 from datetime import datetime as dt
 
 import json
+import os
 import pandas as pd
 import random
 
@@ -14,6 +15,10 @@ from geopy.geocoders import Nominatim
 import requests
 
 geolocator = Nominatim(user_agent='bobbeltje')
+
+with open('/etc/weather_dark_sky.json') as config_file:
+    key = json.load(config_file)
+    key = key.get('SECRET_KEY')
 
 class Weather():
     def __init__(self):
@@ -30,13 +35,13 @@ class Weather():
         return self.d
 
 def get_weather_data(l, date):
+    global key
     year = int(date[:4])
     month = int(date[5:7])
     day = int(date[8:10])
     
     epoch = int(dt(year, month, day).timestamp())
     base = "https://api.darksky.net/forecast/"
-    key = "68c2f89966bbe863f2fd12d98370da08"
     lat = l.latitude                                                         
     lon = l.longitude
     reques = f'{base}{key}/{lat},{lon},{epoch}?units=si'
